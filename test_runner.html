@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Automated Verification</title></head>
+<body>
+  <div id="test-output">Running tests...</div>
+
+  <!-- Include project modules -->
+  <script src="js/words-data.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/dashboard.js"></script>
+
+  <script>
+    (function() {
+      const out = document.getElementById('test-output');
+      const logs = [];
+      function assert(condition, message) {
+        if (!condition) {
+          throw new Error('Assertion Failed: ' + message);
+        }
+        logs.push('PASS: ' + message);
+      }
+
+      try {
+        // 1. Verify words data
+        assert(Array.isArray(window.MODULE_E_WORDS), 'MODULE_E_WORDS is an array');
+        assert(window.MODULE_E_WORDS.length === 536, 'MODULE_E_WORDS contains 536 items');
+        assert(window.MODULE_E_WORDS[0].word.length > 0, 'First word exists');
+        assert(window.MODULE_E_WORDS[0].translation.length > 0, 'First word has Hebrew translation: ' + window.MODULE_E_WORDS[0].translation);
+
+        // 2. Verify lessons data
+        assert(Array.isArray(window.MODULE_E_LESSONS), 'MODULE_E_LESSONS is an array');
+        assert(window.MODULE_E_LESSONS.length === 54, 'MODULE_E_LESSONS contains 54 lesson sets');
+        assert(window.MODULE_E_LESSONS[0].wordIds.length === 10, 'First lesson contains 10 words');
+
+        // 3. Test Database and Demo Seeding
+        window.VocabDB.clearAllResults();
+        assert(window.VocabDB.getAllResults().length === 0, 'Database cleared successfully');
+
+        window.VocabDB.seedDemoData();
+        const demoResults = window.VocabDB.getAllResults();
+        assert(demoResults.length === 15, 'Demo data seeded 15 student quiz results');
+
+        const students = window.VocabDB.getStudentSummaries();
+        assert(students.length === 5, 'Found 5 unique demo students');
+        assert(students[0].averageGrade > 0, 'Student average grade calculated: ' + students[0].averageGrade + '%');
+
+        const troubleWords = window.VocabDB.getTroubleWords();
+        assert(troubleWords.length > 0, 'Trouble words identified: ' + troubleWords.length);
+        assert(troubleWords[0].missedCount > 0, 'Top trouble word missed count: ' + troubleWords[0].missedCount + ' (' + troubleWords[0].word + ')');
+
+        // 4. Test Quiz Engine Execution
+        const targetLesson = window.MODULE_E_LESSONS[0];
+        const allWords = window.VocabDB.getAllWords();
+        const quizWords = targetLesson.wordIds.map(id => allWords.find(w => w.id === id)).filter(Boolean);
+
+        let questionCount = 0;
+        let finishedResult = null;
+
+        window.VocabQuizEngine.startQuiz({
+          words: quizWords,
+          studentName: 'שירה מבחן',
+          studentClass: 'י"א 5 יח"ל',
+          quizId: targetLesson.id,
+          quizTitle: targetLesson.title,
+          questionType: 'mixed',
+          timerSeconds: 0,
+          onQuestionChange: (q, state) => {
+            questionCount++;
+          },
+          onQuizFinished: (res) => {
+            finishedResult = res;
+          }
+        });
+
+        assert(window.VocabQuizEngine.currentQuiz !== null, 'Quiz started successfully');
+        assert(window.VocabQuizEngine.currentQuiz.questions.length === 10, 'Quiz generated exactly 10 questions');
+
+        // Answer all 10 questions (mix of correct and incorrect)
+        for (let i = 0; i < 10; i++) {
+          const q = window.VocabQuizEngine.currentQuiz.questions[i];
+          // Answer first 8 correctly, last 2 incorrectly
+          const answer = (i < 8) ? q.correctAnswer : 'תשובה שגויה';
+          window.VocabQuizEngine.submitAnswer(answer);
+          if (i < 9) {
+            window.VocabQuizEngine.nextQuestion();
+          } else {
+            window.VocabQuizEngine.finishQuiz();
+          }
+        }
+
+        assert(finishedResult !== null, 'Quiz finished callback received');
+        assert(finishedResult.score === 8, 'Quiz score is 8 out of 10');
+        assert(finishedResult.percentage === 80, 'Quiz percentage is 80%');
+        assert(finishedResult.wordsTested.length === 10, 'All 10 words recorded in result');
+
+        // Verify CSV Export
+        const csv = window.VocabDB.exportResultsCSV();
+        assert(typeof csv === 'string' && csv.length > 100, 'CSV export generated valid string with BOM');
+        assert(csv.startsWith('\uFEFF'), 'CSV contains UTF-8 BOM for Excel Hebrew compatibility');
+
+        out.innerHTML = '<h1>ALL TESTS PASSED SUCCESSFULLY!</h1><pre>' + logs.join('\n') + '</pre>';
+      } catch (err) {
+        out.innerHTML = '<h1 style="color:red">TEST FAILED</h1><pre>' + err.stack + '</pre>';
+      }
+    })();
+  </script>
+</body>
+</html>

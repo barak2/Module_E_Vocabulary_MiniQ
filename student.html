@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>בוחן אוצר מילים • Module E Bagrut Quiz</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>✏️</text></svg>">
+  <style>
+    /* Mobile-first enhancements for student portal */
+    body {
+      background: #f1f5f9;
+    }
+    .student-header {
+      background: white;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .student-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1.05rem;
+    }
+    .student-wrap {
+      max-width: 600px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+    .quiz-card {
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06), 0 8px 10px -6px rgba(0,0,0,0.04);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="student-header">
+    <div class="student-logo">
+      <span>🎓</span>
+      <span>Module E Vocab • בוחן פתיחה</span>
+    </div>
+    <span style="font-size:0.8rem; color:var(--text-muted);">הכנה לבגרות באנגלית</span>
+  </header>
+
+  <main class="student-wrap">
+
+    <!-- Stage 1: Student Setup Form -->
+    <div id="quiz-setup-card" class="quiz-card">
+      <div class="qc-header">
+        <h2>בוחן 10 מילים לפתיחת השיעור</h2>
+        <p>תרגול אוצר מילים למודול E (Module E Vocabulary)</p>
+      </div>
+
+      <form id="form-start-quiz">
+        <div class="form-group">
+          <label for="input-student-name">שם פרטי ומשפחה: *</label>
+          <input type="text" id="input-student-name" class="form-control" placeholder="למשל: דניאל כהן" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="input-student-class">כיתה / קבוצה:</label>
+          <input type="text" id="input-student-class" class="form-control" placeholder="למשל: י&quot;א 4 יח&quot;ל">
+        </div>
+
+        <div class="form-group">
+          <label for="quiz-select-lesson">בחר/י שאלון 10 מילים:</label>
+          <select id="quiz-select-lesson" class="form-control">
+            <!-- Populated dynamically via JS -->
+          </select>
+        </div>
+
+        <div class="form-group" style="display:none;">
+          <input type="hidden" id="quiz-question-type" value="mixed">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="btn-submit-start" style="padding:0.9rem;">
+            התחל את הבוחן עכשיו! 🚀
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Stage 2: Active Question Card -->
+    <div id="quiz-running-card" class="quiz-card" style="display:none;">
+      <div class="quiz-top-bar">
+        <span class="q-counter">שאלה <span id="q-current-num">1</span> מתוך <span id="q-total-num">10</span></span>
+        <span style="font-size:0.85rem; color:var(--text-muted);">Module E Prep</span>
+      </div>
+
+      <div class="progress-track">
+        <div id="quiz-progress-bar" class="progress-fill"></div>
+      </div>
+
+      <div class="question-box">
+        <button type="button" class="btn-speak-question" id="btn-speak-question" title="השמע הגייה">🔊</button>
+        <div class="q-prompt en-text" id="q-prompt-text">absorb</div>
+        <div class="q-subprompt" id="q-subprompt-text">בחר/י את התרגום המתאים:</div>
+      </div>
+
+      <div class="options-grid" id="q-options-container">
+        <!-- 4 Multiple choice buttons injected here -->
+      </div>
+
+      <div id="question-feedback-box" class="feedback-box" style="display:none;">
+        <!-- Feedback injected here -->
+      </div>
+
+      <div class="quiz-footer-actions">
+        <button type="button" class="btn btn-primary" id="btn-next-question" style="display:none;">
+          שאלה הבאה ⬅
+        </button>
+      </div>
+    </div>
+
+    <!-- Stage 3: Scorecard & Review Card -->
+    <div id="quiz-results-card" class="quiz-card" style="display:none;">
+      <div class="scorecard-header">
+        <div class="big-score" id="res-grade-pct">90%</div>
+        <div class="ratio-score" id="res-score-ratio">9 מתוך 10 נכונים</div>
+        <div class="student-tagline" id="res-student-name">תלמיד/ה: נועם כהן</div>
+        <div id="res-message-banner" class="res-banner banner-excellent">
+          🌟 כל הכבוד! ציון מעולה!
+        </div>
+      </div>
+
+      <div class="scorecard-actions">
+        <button type="button" class="btn btn-primary" id="btn-retry-missed" style="display:none;">
+          תרגל שוב את המילים שטעית בהן 🔄
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="window.location.reload();">
+          בוחן נוסף ✏️
+        </button>
+      </div>
+
+      <h3 style="margin-bottom:0.75rem; font-size:1.05rem;">פירוט התשובות שלך:</h3>
+      <div class="res-words-list" id="res-words-breakdown">
+        <!-- Breakdown of all 10 words injected here -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Core Scripts -->
+  <script src="js/words-data.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

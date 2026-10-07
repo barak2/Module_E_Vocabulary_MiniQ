@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module E VocabMaster • תרגול אוצר מילים לבגרות באנגלית</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>🎓</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-area">
+        <div class="brand-icon">🎓</div>
+        <div class="brand-text">
+          <h1>Module E VocabMaster</h1>
+          <p>הכנה לבגרות באנגלית מודול E • תרגול 10 מילים בתחילת שיעור</p>
+        </div>
+      </div>
+
+      <nav>
+        <ul class="nav-tabs">
+          <li>
+            <a href="#dashboard" class="nav-tab active" data-view="dashboard">
+              <span>📊</span> לוח בקרה וציונים
+            </a>
+          </li>
+          <li>
+            <a href="#quiz" class="nav-tab" data-view="quiz">
+              <span>✏️</span> בצע בוחן 10 מילים
+            </a>
+          </li>
+          <li>
+            <a href="#wordbank" class="nav-tab" data-view="wordbank">
+              <span>📖</span> מאגר מילים (Band III & II)
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main App Content -->
+  <main class="main-container">
+
+    <!-- ==================== VIEW 1: TEACHER DASHBOARD ==================== -->
+    <section id="view-dashboard" class="view-panel active">
+      <!-- Quick Statistics -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#eff6ff; color:#2563eb;">📝</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-total-quizzes">0</div>
+            <div class="stat-label">בחנים שבוצעו</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#ecfdf5; color:#10b981;">👥</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-total-students">0</div>
+            <div class="stat-label">תלמידים במערכת</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fef3c7; color:#d97706;">📈</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-avg-grade">—</div>
+            <div class="stat-label">ממוצע כיתתי</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fee2e2; color:#ef4444;">⚠️</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-trouble-words">0</div>
+            <div class="stat-label">מילים הדורשות חיזוק</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Trouble Words Spotlight (Words Missed Most Frequently) -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span>🔥</span>
+            <h2>מילים הדורשות חיזוק בתחילת השיעור (Trouble Words)</h2>
+          </div>
+          <div class="section-actions">
+            <span style="font-size:0.85rem; color:var(--text-muted);">המילים שהתלמידים טעו בהן הכי הרבה פעמים בבחנים</span>
+          </div>
+        </div>
+
+        <div id="trouble-words-container">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- Section: Student Results Log & Gradebook -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span>📋</span>
+            <h2>יומן ציונים ותוצאות בחנים (Student Gradebook)</h2>
+          </div>
+
+          <div class="section-actions">
+            <button class="btn btn-secondary btn-sm" id="btn-open-printable" title="הדפסת דף בוחן של 10 שאלות על דף">
+              🖨️ הדפס דף בוחן
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-export-csv" title="ייצוא כל הציונים לקובץ אקסל">
+              📥 ייצוא לאקסל (CSV)
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-seed-data" title="טען נתוני דוגמה לצפייה מיידית">
+              ✨ נתוני הדגמה
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-clear-data" title="איפוס כל הציונים">
+              🗑️ איפוס
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters Toolbar -->
+        <div class="filters-bar">
+          <input type="text" id="search-results" class="filter-input" placeholder="🔍 חיפוש לפי שם תלמיד, כיתה, או מילה שנבחנה...">
+
+          <select id="filter-lesson" class="filter-select">
+            <option value="all">כל השיעורים והשאלונים (All Lessons)</option>
+          </select>
+
+          <select id="filter-score" class="filter-select">
+            <option value="all">כל הציונים (All Grades)</option>
+            <option value="high">ציונים גבוהים (90-100%)</option>
+            <option value="mid">ציונים בינוניים (70-89%)</option>
+            <option value="low">דרוש תרגול (&lt; 70%)</option>
+          </select>
+        </div>
+
+        <!-- Results Table -->
+        <div class="table-responsive">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th style="width:110px;">תאריך ושעה</th>
+                <th style="width:160px;">שם התלמיד/ה</th>
+                <th style="width:200px;">שאלון / שיעור</th>
+                <th style="width:120px;">ציון</th>
+                <th>10 המילים שנבחנו (✓ נכון / ✗ שגוי)</th>
+                <th style="width:110px;">פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="results-tbody">
+              <!-- Populated dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section: Student Rosters & Averages -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span>🧑‍🎓</span>
+            <h2>כרטיסיות תלמידים וממוצעים אישיים</h2>
+          </div>
+          <span style="font-size:0.85rem; color:var(--text-muted);">לחץ/י על כרטיס תלמיד לצפייה בהיסטוריית הבחנים המלאה</span>
+        </div>
+
+        <div id="student-roster-container">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==================== VIEW 2: QUIZ RUNNER ==================== -->
+    <section id="view-quiz" class="view-panel">
+      <div class="quiz-container">
+
+        <!-- Stage 1: Setup Card -->
+        <div id="quiz-setup-card" class="quiz-card">
+          <div class="qc-header">
+            <h2>בוחן 10 מילים לפתיחת השיעור</h2>
+            <p>Module E Vocabulary 10-Word Warm-Up Quiz</p>
+          </div>
+
+          <form id="form-start-quiz">
+            <div class="form-group">
+              <label for="input-student-name">שם התלמיד/ה: *</label>
+              <input type="text" id="input-student-name" class="form-control" placeholder="למשל: יובל כהן" required>
+            </div>
+
+            <div class="form-group">
+              <label for="input-student-class">כיתה / קבוצת לימוד (אופציונלי):</label>
+              <input type="text" id="input-student-class" class="form-control" placeholder="למשל: י&quot;א 4 יח&quot;ל, קבוצה א'">
+            </div>
+
+            <div class="form-group">
+              <label for="quiz-select-lesson">בחר/י שאלון 10 מילים מתוך המאגר:</label>
+              <select id="quiz-select-lesson" class="form-control">
+                <!-- Populated dynamically via JS -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="quiz-question-type">סוג השאלות בבוחן:</label>
+              <select id="quiz-question-type" class="form-control">
+                <option value="mixed">מעורב (הכי מומלץ למודול E: תרגום + הקשר משפט)</option>
+                <option value="en_to_he">אנגלית לעברית (תרגום מילה)</option>
+                <option value="he_to_en">עברית לאנגלית</option>
+                <option value="context">השלמת משפטים בהקשר (Fill in the Blank)</option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="btn-submit-start">
+                התחל בוחן 10 מילים 🚀
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-random-quiz">
+                🎲 10 מילים אקראיות
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Stage 2: Active Quiz Question Card -->
+        <div id="quiz-running-card" class="quiz-card" style="display:none;">
+          <div class="quiz-top-bar">
+            <span class="q-counter">שאלה <span id="q-current-num">1</span> מתוך <span id="q-total-num">10</span></span>
+            <span style="font-size:0.85rem; color:var(--text-muted);">מודול E • בוחן פתיחה</span>
+          </div>
+
+          <div class="progress-track">
+            <div id="quiz-progress-bar" class="progress-fill"></div>
+          </div>
+
+          <div class="question-box">
+            <button type="button" class="btn-speak-question" id="btn-speak-question" title="השמע הגייה באנגלית">🔊</button>
+            <div class="q-prompt en-text" id="q-prompt-text">absorb</div>
+            <div class="q-subprompt" id="q-subprompt-text">בחר/י את התרגום המתאים בעברית:</div>
+          </div>
+
+          <div class="options-grid" id="q-options-container">
+            <!-- 4 Multiple choice buttons injected here -->
+          </div>
+
+          <div id="question-feedback-box" class="feedback-box" style="display:none;">
+            <!-- Feedback injected here -->
+          </div>
+
+          <div class="quiz-footer-actions">
+            <button type="button" class="btn btn-primary" id="btn-next-question" style="display:none;">
+              שאלה הבאה ⬅
+            </button>
+          </div>
+        </div>
+
+        <!-- Stage 3: Scorecard & Review Card -->
+        <div id="quiz-results-card" class="quiz-card" style="display:none;">
+          <div class="scorecard-header">
+            <div class="big-score" id="res-grade-pct">90%</div>
+            <div class="ratio-score" id="res-score-ratio">9 מתוך 10 נכונים</div>
+            <div class="student-tagline" id="res-student-name">תלמיד/ה: נועם כהן</div>
+            <div id="res-message-banner" class="res-banner banner-excellent">
+              🌟 כל הכבוד! שליטה מעולה באוצר המילים!
+            </div>
+          </div>
+
+          <div class="scorecard-actions">
+            <button type="button" class="btn btn-primary" id="btn-retry-missed" style="display:none;">
+              תרגל שוב את המילים שטעית בהן 🔄
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-restart-quiz">
+              בוחן 10 מילים נוסף ✏️
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-back-dashboard">
+              חזרה ללוח הבקרה 📊
+            </button>
+          </div>
+
+          <h3 style="margin-bottom:0.75rem; font-size:1.05rem;">פירוט 10 המילים שנבחנו:</h3>
+          <div class="res-words-list" id="res-words-breakdown">
+            <!-- Breakdown of all 10 words injected here -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ==================== VIEW 3: WORD BANK ==================== -->
+    <section id="view-wordbank" class="view-panel">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span>📖</span>
+            <h2>מאגר אוצר המילים הרשמי לבגרות מודול E</h2>
+          </div>
+          <span id="wb-count-display" style="font-size:0.85rem; color:var(--text-muted);">נטענו 536 מילים</span>
+        </div>
+
+        <div class="filters-bar">
+          <input type="text" id="wb-search" class="filter-input" placeholder="🔍 חיפוש מילה באנגלית, תרגום בעברית, או משפט לדוגמה...">
+
+          <select id="wb-list-filter" class="filter-select">
+            <option value="all">כל הרשימות (All Lists)</option>
+            <option value="Band III - List C">Band III - List C</option>
+            <option value="Band III - List D">Band III - List D</option>
+            <option value="Custom Words">מילים מותאמות אישית</option>
+          </select>
+        </div>
+
+        <div class="wb-grid" id="wb-cards-container">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 1: Quiz Sheet Detail -->
+  <div class="modal-overlay" id="modal-quiz-sheet">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>טופס בוחן מלא לתלמיד/ה</h3>
+        <button class="btn-close-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-sheet-content">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-close-modal">סגור</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Student History -->
+  <div class="modal-overlay" id="modal-student-history">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>תיק מעקב תלמיד/ה</h3>
+        <button class="btn-close-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-student-content">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-close-modal">סגור</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Printable Paper Quiz Sheet -->
+  <div class="modal-overlay" id="modal-printable-quiz">
+    <div class="modal-box" style="max-width:850px;">
+      <div class="modal-header">
+        <h3>דף בוחן להדפסה (Printable 10-Word Quiz)</h3>
+        <button class="btn-close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:1rem; color:var(--text-muted); font-size:0.9rem;">
+          דף זה מוכן להדפסה כדף בוחן פיזי של 10 שאלות עבור שיעורים שבהם תלמידים ללא טלפונים, יחד עם דף תשובות למורה.
+        </p>
+        <div id="printable-quiz-sheet">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-print-sheet">🖨️ הדפס כעת (Print / PDF)</button>
+        <button class="btn btn-secondary btn-close-modal">סגור</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Core Scripts -->
+  <script src="js/words-data.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
